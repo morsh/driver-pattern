@@ -1,6 +1,12 @@
 # Driver Pattern
 
-A project for generating react test drivers
+A project for generating react test drivers.
+
+Features:
+* Automatic react component property setters
+* Automatic redux state setters
+* Easily declare getters
+* Easily declare actions
 
 ## Usage
 
