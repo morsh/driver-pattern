@@ -5,6 +5,7 @@
   "description": "",
   "keywords": [],
   "main": "dist/lib.js",
+  "files": [ "dist" ],
   "dependencies": {
     "@reduxjs/toolkit": "^1.8.1",
     "react": "17.0.2",
