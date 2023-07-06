@@ -1,74 +1,28 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { Store } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
-
-type Fn = (...args: any) => any;
-
-export type IGetters = Record<string, string | Fn>;
-
-export type IActions = Record<string, Fn>;
-
-export type IStore = (args: any) => Store;
-
-export type IDriver<
-  Comp extends React.FC<Props>,
-  Props extends object,
-  Getter extends object,
-  Actions extends IActions,
-  Str extends (IStore | undefined)
-> = {
-  initialize: () => IDriver<Comp, Props, Getter, Actions, Str>;
-  given: {
-    [k in keyof Props]-?: (
-      arg: Props[k]
-    ) => IDriver<Comp, Props, Getter, Actions, Str>;
-  };
-  when: {
-    // [key in keyof Actions]: null;
-    [key in keyof Actions | "render"]: key extends "render"
-    ? () => IDriver<Comp, Props, Getter, Actions, Str>
-    : (
-      ...args: Parameters<Actions[key]>
-    ) => IDriver<Comp, Props, Getter, Actions, Str>;
-    // : Actions[key];
-    // render: () => IDriver<Comp, Props, Getter, Actions>;
-  };
-  get: {
-    [key in keyof Getter]-?: Getter[key] extends Fn
-    ? Getter[key]
-    : () => HTMLElement | null;
-  };
-} & (Str extends object
-  ? {
-    givenState: {
-      [k in keyof ReturnType<ReturnType<Str>["getState"]>]: (
-        arg: ReturnType<ReturnType<Str>["getState"]>[k]
-      ) => IDriver<Comp, Props, Getter, Actions, Str>;
-    };
-  }
-  : never);
+import { IGetters, IActions, ICreateStore, IDriver } from './createDriver.types';
 
 export function createDriver<
-  T extends object,
-  G extends IGetters,
-  A extends IActions,
-  S extends IStore | undefined
+  ComponentProps extends object,
+  Getters extends IGetters,
+  Actions extends IActions,
+  CreateStore extends ICreateStore | undefined
 >(
-  Component: React.FC<T>,
+  Component: React.FC<ComponentProps>,
   {
     getters,
     actions,
     createStore,
-  }: { getters?: G; actions?: A; createStore?: S } = {}
+  }: { getters?: Getters; actions?: Actions; createStore?: CreateStore } = {}
 ) {
   let props: Record<string, unknown> = {};
   let state: Record<string, unknown> = {};
 
-  const givenBuilder = new Proxy(
+  const givenProxy = new Proxy(
     {},
     {
-      get(target, prop) {
+      get(_, prop) {
         return (arg: unknown): unknown => {
           // If no arguments passed return current value.
           props[prop.toString()] = arg;
@@ -78,10 +32,10 @@ export function createDriver<
     }
   );
 
-  const givenStateBuilder = new Proxy(
+  const givenStateProxy = new Proxy(
     {},
     {
-      get(target, prop) {
+      get(_, prop) {
         return (arg: unknown): unknown => {
           // If no arguments passed return current value.
           state[prop.toString()] = arg;
@@ -94,16 +48,16 @@ export function createDriver<
   const getBuilder = new Proxy(
     {},
     {
-      get(target, prop) {
+      get(_, prop) {
         return (...args: unknown[]): unknown => {
-          const getterDefinition = (getters as any)[prop];
-          if (typeof getterDefinition === "string") {
-            return screen.queryByTestId(getterDefinition);
+          const testIdOrGetterFn = (getters as any)[prop];
+          if (typeof testIdOrGetterFn === "string") {
+            return screen.queryByTestId(testIdOrGetterFn);
           }
-          if (typeof getterDefinition === "function") {
-            return getterDefinition(...args);
+          if (typeof testIdOrGetterFn === "function") {
+            return testIdOrGetterFn(...args);
           }
-          return getterDefinition;
+          return testIdOrGetterFn;
         };
       },
     }
@@ -115,8 +69,8 @@ export function createDriver<
       state = {};
       return built;
     },
-    given: givenBuilder,
-    givenState: givenStateBuilder,
+    given: givenProxy,
+    givenState: givenStateProxy,
     when: {
       ...(actions &&
         Object.keys(actions).reduce(
@@ -133,12 +87,11 @@ export function createDriver<
         if (createStore) {
           render(
             <Provider store={createStore({ preloadedState: state })}>
-              <Component {...(props as T)} />
-              );
+              <Component {...(props as ComponentProps)} />
             </Provider>
           );
         } else {
-          render(<Component {...(props as T)} />);
+          render(<Component {...(props as ComponentProps)} />);
         }
         return built;
       },
@@ -146,5 +99,5 @@ export function createDriver<
     get: getBuilder,
   };
 
-  return built as IDriver<React.FC<T>, T, G, A, S>;
+  return built as unknown as IDriver<ComponentProps, Getters, Actions, CreateStore>;
 }

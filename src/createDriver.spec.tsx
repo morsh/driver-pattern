@@ -70,7 +70,6 @@ describe("DriverBuilder", () => {
       });
       const name = chance.word();
       driver.given.name(name).when.render();
-      driver.givenState;
       expect(driver.get.getTestName(2)!.innerHTML).toEqual(`${name}2`);
     });
   });

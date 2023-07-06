@@ -8,6 +8,9 @@ Features:
 * Easily declare getters
 * Easily declare actions
 
+Resources:
+[BDD feat. Driver & Builder Patterns](https://morshemesh.medium.com/bdd-feat-driver-builder-patterns-57b4ad63e614)
+
 ## Usage
 
 You can see usage examples in the test file, those are some cherry-picked exmaples:

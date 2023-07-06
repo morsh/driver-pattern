@@ -1,11 +1,13 @@
 {
   "name": "driver-pattern",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "Author": "Mor Shemesh",
-  "description": "",
-  "keywords": [],
+  "description": "Driver pattern for dynamically creating test drivers",
+  "keywords": ["react", "redux", "typescript", "jest", "tdd", "bdd"],
   "main": "dist/lib.js",
   "files": [ "dist" ],
+  "homepage": "https://github.com/morsh/driver-pattern",
+  "license": "MIT",
   "dependencies": {
     "@reduxjs/toolkit": "^1.8.1",
     "react": "17.0.2",
