@@ -93,13 +93,9 @@ describe("DriverBuilder", () => {
         getters: {
           button: "test-button",
         },
-        actions: {
-          click: () => {
-            // !important: this call must be in clause to prevent circular dependency
-            // fireEvent.click(driver.get.button()!);
-            fireEvent.click(driver.get.button()!);
-          },
-        },
+        actions: (get) => ({
+          click: () => fireEvent.click(get.button()!)
+        }),
       });
       driver.when.render();
       expect(driver.when.click).toBeDefined();
@@ -111,11 +107,9 @@ describe("DriverBuilder", () => {
         getters: {
           button: "test-button",
         },
-        actions: {
-          click: () => {
-            fireEvent.click(driver.get.button()!);
-          },
-        },
+        actions: get => ({
+          click: () => fireEvent.click(get.button()!)
+        }),
       });
       const onClickSpy = jest.fn();
       driver.given.onClick(onClickSpy).when.render().when.click();

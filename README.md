@@ -11,13 +11,13 @@ Features:
 Resources:
 [BDD feat. Driver & Builder Patterns](https://morshemesh.medium.com/bdd-feat-driver-builder-patterns-57b4ad63e614)
 
-## Usage
+# Usage
 
 You can see usage examples in the test file, those are some cherry-picked exmaples:
 
+## Givens & Getters
 Automatically created "givens" based on properties & declared getters:
 ```ts
-
 const NameComponent: FC<ComponentProps> = ({ name }: { name: string }) => (
   <span data-testid="test-name">{name}</span>
 );
@@ -32,25 +32,33 @@ driver.given.name("Some Name").when.render();
 expect(driver.get.name()!.innerHTML).toEqual("Some Name");
 ```
 
-Actions:
+## Actions:
+Actions are defined as a function which receives a get parameter, giving you access to the the get object infered from getters.
+Simply put, you can use `driver.get.someGetter()` when performing actions:
+
 ```ts
 const driver = createDriver(Component, {
   getters: {
     button: "test-button",
   },
-  actions: {
-    click: () => {
-      fireEvent.click(driver.get.button()!);
-    },
-  },
+  actions: get => ({
+    click: () => fireEvent.click(driver.get.button()!),
+  }),
 });
 const onClickSpy = jest.fn();
 driver.given.onClick(onClickSpy).when.render().when.click();
 expect(onClickSpy).toHaveBeenCalledTimes(1);
 ```
 
-Supprt for redux state:
+## Supprt for redux state:
+Receives a createStore method, which:
+* returns a redux Store (enabling to infer the store state)
+* receives a preloadedState state, enabling the driver to inject an initial state
+
 ```ts
+
+const createStore = ({ preloadedState }: { preloadedState: any }) => configureStore(...);
+
 const driver = createDriver(ReduxComponent, {
   getters: {
     title: "test-redux-title",

@@ -5,16 +5,16 @@ import { IGetters, IActions, ICreateStore, IDriver } from './createDriver.types'
 
 export function createDriver<
   ComponentProps extends object,
-  Getters extends IGetters,
   Actions extends IActions,
-  CreateStore extends ICreateStore | undefined
+  CreateStore extends ICreateStore | undefined,
+  Getters extends IGetters,
 >(
   Component: React.FC<ComponentProps>,
   {
     getters,
     actions,
     createStore,
-  }: { getters?: Getters; actions?: Actions; createStore?: CreateStore } = {}
+  }: { getters?: Getters, actions?: (get: IDriver<any, Getters, any, any>['get']) => Actions; createStore?: CreateStore } = {}
 ) {
   let props: Record<string, unknown> = {};
   let state: Record<string, unknown> = {};
@@ -63,6 +63,8 @@ export function createDriver<
     }
   );
 
+  const acts = actions ? actions(getBuilder as any) : {} as IActions;
+
   const built: Record<string, unknown> = {
     initialize: () => {
       props = {};
@@ -72,12 +74,12 @@ export function createDriver<
     given: givenProxy,
     givenState: givenStateProxy,
     when: {
-      ...(actions &&
-        Object.keys(actions).reduce(
+      ...(acts &&
+        Object.keys(acts).reduce(
           (arr, key) => ({
             ...arr,
             [key]: (...args: any[]) => {
-              actions[key](...args);
+              acts[key](...args);
               return built;
             },
           }),
