@@ -79,7 +79,11 @@ export function createDriver<
           (arr, key) => ({
             ...arr,
             [key]: (...args: any[]) => {
-              acts[key](...args);
+              const returnType = acts[key](...args);
+              const isReturnTypePromise = returnType instanceof Promise;
+              if (isReturnTypePromise) {
+                return returnType.then(() => built);
+              }
               return built;
             },
           }),

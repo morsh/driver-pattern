@@ -115,5 +115,22 @@ describe("DriverBuilder", () => {
       driver.given.onClick(onClickSpy).when.render().when.click();
       expect(onClickSpy).toHaveBeenCalledTimes(1);
     });
+
+    it("should await promise", async () => {
+      const driver = createDriver(Component, {
+        getters: {
+          button: "test-button",
+        },
+        actions: get => ({
+          click: () => new Promise((resolve) => setTimeout(() => fireEvent.click(get.button()!) && resolve(1), 1000))
+        }),
+      });
+      const onClickSpy = jest.fn();
+      const promise = driver.given.onClick(onClickSpy).when.render().when.click();
+      expect(onClickSpy).not.toHaveBeenCalled();
+
+      await promise;
+      expect(onClickSpy).toHaveBeenCalledTimes(1);
+    });
   });
 });

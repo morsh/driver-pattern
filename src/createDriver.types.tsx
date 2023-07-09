@@ -26,7 +26,9 @@ interface IBaseDriver<
     ) => this;
   };
   when: {
-    [key in keyof Actions | "render"]: key extends "render" ? (() => this) : ((...args: Parameters<Actions[key]>) => this);
+    [key in keyof Actions | "render"]: key extends "render" ? (() => this) : 
+      ReturnType<Actions[key]> extends Promise<any> ? ((...args: Parameters<Actions[key]>) => Promise<this>) :
+      ((...args: Parameters<Actions[key]>) => this);
   };
   get: {
     [getKey in keyof Getters]-?: Getters[getKey] extends Fn ? Getters[getKey] : () => HTMLElement | null;
