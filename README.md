@@ -6,7 +6,9 @@ Features:
 * Automatic react component property setters
 * Automatic redux state setters
 * Easily declare getters
-* Easily declare actions
+* Easily declare actions (including async actions)
+* Define the driver once in the top of the test suite and initialize it between tests
+* Default component property and state property initializers (initialized for each test)
 
 Resources:
 [BDD feat. Driver & Builder Patterns](https://morshemesh.medium.com/bdd-feat-driver-builder-patterns-57b4ad63e614)
@@ -35,6 +37,8 @@ expect(driver.get.name()!.innerHTML).toEqual("Some Name");
 ## Actions
 Actions are defined as a function which receives a get parameter, giving you access to the the get object infered from getters.
 Simply put, you can use `driver.get.someGetter()` when performing actions:
+
+When defining actions, you can then use the `.on` property to trigger them:
 
 ```ts
 const driver = createDriver(Component, {
