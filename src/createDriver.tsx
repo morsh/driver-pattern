@@ -1,23 +1,29 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { IGetters, IActions, ICreateStore, IDriver } from './createDriver.types';
+import { IGetters, IActions, ICreateStore, IDriver, Fn } from './createDriver.types';
 
 export function createDriver<
   ComponentProps extends object,
-  Actions extends IActions,
+  ActionsInit extends (get: IDriver<any, Getters, any, any>['get']) => IActions,
   CreateStore extends ICreateStore | undefined,
   Getters extends IGetters,
+
+  // Derived types
+  DefaultProps extends () => Partial<ComponentProps>,
+  DefaultState extends CreateStore extends ICreateStore ? () => Partial<ReturnType<ReturnType<CreateStore>["getState"]>> : never,
 >(
   Component: React.FC<ComponentProps>,
   {
+    defaultProps,
+    defaultState,
     getters,
     actions,
     createStore,
-  }: { getters?: Getters, actions?: (get: IDriver<any, Getters, any, any>['get']) => Actions; createStore?: CreateStore } = {}
+  }: { defaultProps?: DefaultProps, defaultState?: DefaultState, getters?: Getters, actions?: ActionsInit; createStore?: CreateStore } = {}
 ) {
-  let props: Record<string, unknown> = {};
-  let state: Record<string, unknown> = {};
+  let props: Record<string, unknown> = { ...defaultProps?.() || {} };
+  let state: Record<string, unknown> = { ...defaultState?.() };
 
   const givenProxy = new Proxy(
     {},
@@ -67,13 +73,13 @@ export function createDriver<
 
   const built: Record<string, unknown> = {
     initialize: () => {
-      props = {};
-      state = {};
+      props = { ...defaultProps?.() };
+      state = { ...defaultState?.() };
       return built;
     },
     given: givenProxy,
     givenState: givenStateProxy,
-    when: {
+    on: {
       ...(acts &&
         Object.keys(acts).reduce(
           (arr, key) => ({
@@ -89,6 +95,8 @@ export function createDriver<
           }),
           {}
         )),
+    },
+    when: {
       render: () => {
         if (createStore) {
           render(
@@ -105,5 +113,5 @@ export function createDriver<
     get: getBuilder,
   };
 
-  return built as unknown as IDriver<ComponentProps, Getters, Actions, CreateStore>;
+  return built as unknown as IDriver<ComponentProps, Getters, ReturnType<ActionsInit>, CreateStore>;
 }

@@ -2,7 +2,7 @@ import React from "react";
 import { Store } from "@reduxjs/toolkit";
 
 // Helper type to define functions that can be called with any number of arguments
-type Fn = (...args: any) => any;
+export type Fn = (...args: any) => any;
 
 // Getters can define a string as a testid or a general function
 export type IGetters = Record<string, string | Fn>;
@@ -26,7 +26,10 @@ interface IBaseDriver<
     ) => this;
   };
   when: {
-    [key in keyof Actions | "render"]: key extends "render" ? (() => this) : 
+    render: () => IBaseDriver<Props, Getters, Actions>;
+  },
+  on: {
+    [key in keyof Actions]:
       ReturnType<Actions[key]> extends Promise<any> ? ((...args: Parameters<Actions[key]>) => Promise<this>) :
       ((...args: Parameters<Actions[key]>) => this);
   };

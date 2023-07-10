@@ -85,6 +85,21 @@ describe("DriverBuilder", () => {
       driver.given.name(name).initialize().when.render();
       expect(driver.get.name()!.innerHTML).toEqual(``);
     });
+
+    it('should initialize with default props', () => {
+      const initName = chance.word();
+      const driver = createDriver(Component, {
+        defaultProps: () => ({
+          name: initName
+        }),
+        getters: {
+          name: "test-name",
+        },
+      });
+      const name = chance.word();
+      driver.given.name(name).initialize().when.render();
+      expect(driver.get.name()!.innerHTML).toEqual(initName);
+    });
   });
 
   describe("actions", () => {
@@ -98,8 +113,8 @@ describe("DriverBuilder", () => {
         }),
       });
       driver.when.render();
-      expect(driver.when.click).toBeDefined();
-      expect(driver.when.click()).toBe(driver);
+      expect(driver.on.click).toBeDefined();
+      expect(driver.on.click()).toBe(driver);
     });
 
     it("should spy on method props", () => {
@@ -112,7 +127,7 @@ describe("DriverBuilder", () => {
         }),
       });
       const onClickSpy = jest.fn();
-      driver.given.onClick(onClickSpy).when.render().when.click();
+      driver.given.onClick(onClickSpy).when.render().on.click();
       expect(onClickSpy).toHaveBeenCalledTimes(1);
     });
 
@@ -126,7 +141,7 @@ describe("DriverBuilder", () => {
         }),
       });
       const onClickSpy = jest.fn();
-      const promise = driver.given.onClick(onClickSpy).when.render().when.click();
+      const promise = driver.given.onClick(onClickSpy).when.render().on.click();
       expect(onClickSpy).not.toHaveBeenCalled();
 
       await promise;

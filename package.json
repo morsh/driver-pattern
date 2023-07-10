@@ -1,6 +1,6 @@
 {
   "name": "driver-pattern",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "Author": "Mor Shemesh",
   "description": "Driver pattern for dynamically creating test drivers",
   "keywords": ["react", "redux", "typescript", "jest", "tdd", "bdd"],
